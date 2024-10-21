@@ -143,7 +143,10 @@ const char * const Renderer::Program::uniforms[NUM_UNIFORM_TYPES] = {
 	"boneTransforms",	// GPU_BONES
 	"isWireframe",	// WIREFRAME
 	"solidColor",	// SOLID_COLOR
-	"fLumEmittance"	// LUM_EMIT
+    "fLumEmittance",	// LUM_EMIT
+    "specularLevel",	// SPEC_LEVEL
+    "roughnessScale",	// ROUGH_SCALE
+    "displacementScale",	// DISP_SCALE
 };
 
 
@@ -1550,6 +1553,11 @@ bool Renderer::setupProgramCE1( const NifModel * nif, Program * prog, Shape * me
 			prog->uni1f( POW_RIM, lsp->rimPower );
 			prog->uni1f( POW_BACK, lsp->backlightPower );
 		}
+
+        // Skyrim PBR
+        prog->uni1f(SPEC_LEVEL, lsp->specularLevel);
+        prog->uni1f(ROUGH_SCALE, lsp->roughnessScale);
+        prog->uni1f(DISP_SCALE, lsp->displacementScale);
 
 		// Multi-Layer
 

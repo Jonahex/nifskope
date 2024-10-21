@@ -163,6 +163,10 @@ public:
 		SOLID_COLOR,
 		LUM_EMIT,
 
+        SPEC_LEVEL,
+        ROUGH_SCALE,
+        DISP_SCALE,
+
 		NUM_UNIFORM_TYPES
 	} UniformType;
 

@@ -1356,6 +1356,11 @@ void BSLightingShaderProperty::resetParams()
 	lightingEffect1 = 0.0;
 	lightingEffect2 = 1.0;
 
+    // Skyrim PBR properties
+    specularLevel = 0.04;
+    roughnessScale = 1;
+    displacementScale = 0.2;
+
 	// Multi-layer properties
 	innerThickness = 1.0;
 	innerTextureScale.reset();
@@ -1474,13 +1479,17 @@ void BSLightingShaderProperty::updateParams( const NifModel * nif )
 			lightingEffect1 = nif->get<float>( lsp, "Lighting Effect 1" );
 			lightingEffect2 = nif->get<float>( lsp, "Lighting Effect 2" );
 
+            specularLevel = nif->get<float>( lsp, "Specular Level" );
+            roughnessScale = nif->get<float>( lsp, "Roughness Scale" );
+            displacementScale = nif->get<float>( lsp, "Displacement Scale" );
+
 			innerThickness = nif->get<float>( lsp, "Parallax Inner Layer Thickness" );
 			outerRefractionStrength = nif->get<float>( lsp, "Parallax Refraction Scale" );
 			outerReflectionStrength = nif->get<float>( lsp, "Parallax Envmap Strength" );
 			innerTextureScale.set( nif->get<Vector2>(lsp, "Parallax Inner Layer Texture Scale") );
 
-			hasSpecularMap = hasSF1( ShaderFlags::SLSF1_Specular ) && !textures.value( 7, "" ).isEmpty();
-			hasHeightMap = isST( ShaderFlags::ST_Heightmap ) && hasSF1( ShaderFlags::SLSF1_Parallax ) && !textures.value( 3, "" ).isEmpty();
+            hasSpecularMap = hasSF1( ShaderFlags::SLSF1_Specular ) && !textures.value( 7, "" ).isEmpty();
+            hasHeightMap = ((isST( ShaderFlags::ST_Heightmap ) && hasSF1( ShaderFlags::SLSF1_Parallax )) || hasSF2(ShaderFlags::SLSF2_Unused01)) && !textures.value( 3, "" ).isEmpty();
 			hasBacklight = hasSF2( ShaderFlags::SLSF2_Back_Lighting );
 			hasRimlight = hasSF2( ShaderFlags::SLSF2_Rim_Lighting );
 			hasSoftlight = hasSF2( ShaderFlags::SLSF2_Soft_Lighting );

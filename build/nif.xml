@@ -1416,7 +1416,7 @@
         <option value="8" name="Multitexture Landscape" />
         <option value="9" name="LOD Landscape" />
         <option value="10" name="Snow" />
-        <option value="11" name="MultiLayer Parallax">Enables EnvMap Mask(TS6), Layer(TS7), Parallax Layer Thickness, Parallax Refraction Scale, Parallax Inner Layer U Scale, Parallax Inner Layer V Scale, EnvMap Scale</option>
+        <option value="11" name="MultiLayer Parallax/Two Layer PBR/Fuzzy PBR/Glint PBR">Enables EnvMap Mask(TS6), Layer(TS7), Parallax Layer Thickness, Parallax Refraction Scale, Parallax Inner Layer U Scale, Parallax Inner Layer V Scale, EnvMap Scale</option>
         <option value="12" name="Tree Anim" />
         <option value="13" name="LOD Objects" />
         <option value="14" name="Sparkle Snow">Enables SparkleParams</option>
@@ -6474,7 +6474,7 @@
         <option bit="9" name="Multi_Index_Snow"></option>
         <option bit="10" name="Vertex_Lighting"></option>
         <option bit="11" name="Uniform_Scale"></option>
-        <option bit="12" name="Fit_Slope"></option>
+        <option bit="12" name="Fit_Slope/Glint">Use Glint in PBR.</option>
         <option bit="13" name="Billboard"></option>
         <option bit="14" name="No_LOD_Land_Blend"></option>
         <option bit="15" name="EnvMap_Light_Fade"></option>
@@ -6485,14 +6485,14 @@
         <option bit="20" name="Cloud_LOD"></option>
         <option bit="21" name="Anisotropic_Lighting">Hair only?</option>
         <option bit="22" name="No_Transparency_Multisampling"></option>
-        <option bit="23" name="Unused01">Unused?</option>
-        <option bit="24" name="Multi_Layer_Parallax">Use Multilayer (inner-layer) Map</option>
-        <option bit="25" name="Soft_Lighting">Use Soft Lighting Map</option>
-        <option bit="26" name="Rim_Lighting">Use Rim Lighting Map</option>
-        <option bit="27" name="Back_Lighting">Use Back Lighting Map</option>
+        <option bit="23" name="PBR">Use physically-based rendering.</option>
+        <option bit="24" name="Multi_Layer_Parallax/Two_Layer">Use Multilayer (inner-layer) Map in non-PBR. Use Two Layer shading in PBR.</option>
+        <option bit="25" name="Soft_Lighting/Inter_Layer_Parallax/Fuzz">Use Soft Lighting Map in non-PBR. Fuzz model in PBR. Parallax between layers in Two Layer model in PBR.</option>
+        <option bit="26" name="Rim_Lighting/Subsurface">Use Rim Lighting Map in non-PBR. Use Subsurface shading in PBR.</option>
+        <option bit="27" name="Back_Lighting/Coat_Normal/Hair_Marschner">Use Back Lighting Map in non-PBR. Use Marschner hair shading model in PBR. Use coat normal map Two Layer model in PBR.</option>
         <option bit="28" name="Unused02">Unused?</option>
         <option bit="29" name="Tree_Anim">Enables Vertex Animation, Flutter Animation</option>
-        <option bit="30" name="Effect_Lighting"></option>
+        <option bit="30" name="Effect_Lighting/Colored_Coat">Enables coat diffuse contribution in Two Layer model in PBR.</option>
         <option bit="31" name="HD_LOD_Objects"></option>
     </bitflags>
 
@@ -7261,12 +7261,19 @@
         <field name="Texture Clamp Mode" type="TexClampMode" default="WRAP_S_WRAP_T" vercond="#NI_BS_LTE_FO4#">How to handle texture borders.</field>
         <field name="Alpha" type="float" default="1.0" range="0.0:128.0" vercond="#NI_BS_LTE_FO4#">The material opacity (1=opaque). Greater than 1.0 is used to affect alpha falloff i.e. staying opaque longer based on vertex alpha and alpha mask.</field>
         <field name="Refraction Strength" type="float" range="#F0_1#" vercond="#NI_BS_LTE_FO4#">The amount of distortion. **Not based on physically accurate refractive index** (0=none)</field>
-        <field name="Glossiness" type="float" default="80.0" range="#F0_999#" vercond="#NI_BS_LT_FO4#">The material specular power, or glossiness.</field>
+        <field name="Glossiness" type="float" default="80.0" range="#F0_999#" vercond="#NI_BS_LT_FO4#" cond="((Shader Flags 2) #BITAND# 0x800000) == 0">The material specular power, or glossiness.</field>
+        <field name="Specular Level" type="float" default="0.04" vercond="#NI_BS_LT_FO4#" cond="((Shader Flags 2) #BITAND# 0x800000) != 0">Non-metal reflectance.</field>
         <field name="Smoothness" type="float" default="1.0" range="#F0_1#" vercond="#BS_FO4_2#">The base roughness, multiplied by the smoothness map.</field>
-        <field name="Specular Color" type="Color3" default="#VEC3_ONE#" vercond="#NI_BS_LTE_FO4#">Adds a colored highlight.</field>
-        <field name="Specular Strength" type="float" default="1.0" range="#F0_10#" vercond="#NI_BS_LTE_FO4#">Brightness of specular highlight. (0=not visible)</field>
-        <field name="Lighting Effect 1" type="float" default="0.3" range="#F0_10#" vercond="#NI_BS_LT_FO4#">Controls strength for envmap/backlight/rim/softlight lighting effect?</field>
-        <field name="Lighting Effect 2" type="float" default="2.0" range="#F0_1000#" vercond="#NI_BS_LT_FO4#">Controls strength for envmap/backlight/rim/softlight lighting effect?</field>
+        <field name="Specular Color" type="Color3" default="#VEC3_ONE#" vercond="#NI_BS_LTE_FO4#" cond="((Shader Flags 2) #BITAND# 0x800000) == 0">Adds a colored highlight.</field>
+        <field name="Subsurface Color" type="Color3" default="#VEC3_ZERO#" cond="((Shader Flags 2) #BITAND# 0x1800000) == 0x800000">Subsurface color.</field>
+        <field name="Coat Color" type="Color3" default="#VEC3_ONE#" cond="((Shader Flags 2) #BITAND# 0x1800000) == 0x1800000">Coat color.</field>
+        <field name="Specular Strength" type="float" default="1.0" range="#F0_10#" vercond="#NI_BS_LTE_FO4#" cond="((Shader Flags 2) #BITAND# 0x800000) == 0">Brightness of specular highlight. (0=not visible)</field>
+        <field name="Roughness Scale" type="float" default="1.0" cond="((Shader Flags 2) #BITAND# 0x800000) != 0">Roughness multiplier.</field>
+        <field name="Lighting Effect 1" type="float" default="0.3" range="#F0_10#" vercond="#NI_BS_LT_FO4#"cond="((Shader Flags 2) #BITAND# 0x800000) == 0">Controls strength for envmap/backlight/rim/softlight lighting effect?</field>
+        <field name="Subsurface Opacity" type="float" default="1.0" vercond="#NI_BS_LT_FO4#" cond="((Shader Flags 2) #BITAND# 0x1800000) == 0x800000">Subsurface opacity.</field>
+        <field name="Coat Strength" type="float" default="1.0" vercond="#NI_BS_LT_FO4#" cond="((Shader Flags 2) #BITAND# 0x1800000) == 0x1800000">Coat strength.</field>
+        <field name="Lighting Effect 2" type="float" default="2.0" range="#F0_1000#" vercond="#NI_BS_LT_FO4#"cond="((Shader Flags 2) #BITAND# 0x800000) == 0">Controls strength for envmap/backlight/rim/softlight lighting effect?</field>
+        <field name="Displacement Scale" type="float" default="0.2" vercond="#NI_BS_LT_FO4#" cond="((Shader Flags 2) #BITAND#  0x800000) != 0">Displacement Scale.</field>
         <field name="Subsurface Rolloff" type="float" default="0.0" range="#F0_10#" vercond="#BS_FO4_2#" />
         <field name="Rimlight Power" type="float" default="#FLT_MAX#" vercond="#BS_FO4_2#" />
         <field name="Backlight Power" type="float" range="#F0_1000#" vercond="#BS_FO4_2#" cond="(Rimlight Power #GTE# #FLT_MAX#) #AND# (Rimlight Power #LT# #FLT_INF#)" />
@@ -7281,10 +7288,21 @@
         <field name="Hair Tint Color" type="Color3" default="#VEC3_ONE#" vercond="#NI_BS_LTE_FO4#" cond="Shader Type == 6">Tints the base texture. Overridden by game settings.</field>
         <field name="Max Passes" type="float" default="4.0" range="1.0:320.0" vercond="#NI_BS_LTE_FO4#" cond="Shader Type == 7" />
         <field name="Scale" type="float" default="1.0" range="#F0_10#" vercond="#NI_BS_LTE_FO4#" cond="Shader Type == 7" />
-        <field name="Parallax Inner Layer Thickness" type="float" default="5.0" range="5.0:500.0" vercond="#NI_BS_LTE_FO4#" cond="Shader Type == 11">How far from the surface the inner layer appears to be.</field>
-        <field name="Parallax Refraction Scale" type="float" default="0.25" range="#F0_1#" vercond="#NI_BS_LTE_FO4#" cond="Shader Type == 11">Depth of inner parallax layer effect.</field>
-        <field name="Parallax Inner Layer Texture Scale" type="TexCoord" vercond="#NI_BS_LTE_FO4#" cond="Shader Type == 11">Scales the inner parallax layer texture.</field>
-        <field name="Parallax Envmap Strength" type="float" default="1.0" range="#F0_10#" vercond="#NI_BS_LTE_FO4#" cond="Shader Type == 11">How strong the environment/cube map is.</field>
+        <field name="Coat Roughness" type="float" default="1.0" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 25165824) == 25165824)">Coat roughness.</field>
+        <field name="Coat Specular Level" type="float" default="0.04" cond="(Shader Type == 11) #AND# (((Shader Flags 2)#BITAND# 25165824) == 25165824)">Coat specular level.</field>
+        <field name="Coat Dummy" type="Color3" default="#VEC3_ZERO#" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 25165824) == 25165824)">Free bytes.</field>
+        <field name="Fuzz Color" type="Color3" default="#VEC3_ONE#" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 58720256) == 41943040)">Fuzz color.</field>
+        <field name="Fuzz Weight" type="float" default="1.0" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 58720256) == 41943040)">Fuzz weight.</field>
+        <field name="Fuzz Dummy" type="float" default="0.0" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 58720256) == 41943040)">Free bytes.</field>
+		<field name="Glint Screenspace Scale" type="float" default="1.5" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 25169920) == 8392704)">Glint screenspace scale.</field>
+        <field name="Glint Log Microfacet Density" type="float" default="40.0" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 25169920) == 8392704)">Glint microfacet density.</field>
+        <field name="Glint Microfacet Roughness" type="float" default="0.015" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 25169920) == 8392704)">Glint microfacet roughness.</field>
+        <field name="Glint Density Randomization" type="float" default="2.0" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 25169920) == 8392704)">Glint density randomization.</field>
+        <field name="Glint Dummy" type="float" default="1.0" cond="(Shader Type == 11) #AND#; (((Shader Flags 2) #BITAND# 25169920) == 8392704)">Free bytes.</field>
+        <field name="Parallax Inner Layer Thickness" type="float" default="5.0" range="5.0:500.0" vercond="#NI_BS_LTE_FO4#" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 0x800000) == 0)">How far from the surface the inner layer appears to be.</field>
+        <field name="Parallax Refraction Scale" type="float" default="0.25" range="#F0_1#" vercond="#NI_BS_LTE_FO4#" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 0x800000) == 0)">Depth of inner parallax layer effect.</field>
+        <field name="Parallax Inner Layer Texture Scale" type="TexCoord" vercond="#NI_BS_LTE_FO4#" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 0x800000) == 0)">Scales the inner parallax layer texture.</field>
+        <field name="Parallax Envmap Strength" type="float" default="1.0" range="#F0_10#" vercond="#NI_BS_LTE_FO4#" cond="(Shader Type == 11) #AND# (((Shader Flags 2) #BITAND# 0x800000) == 0)">How strong the environment/cube map is.</field>
         <field name="Sparkle Parameters" type="Vector4" vercond="#NI_BS_LTE_FO4#" cond="Shader Type == 14">CK lists "snow material" when used.</field>
         <field name="Eye Cubemap Scale" type="float" default="1.3" range="#F0_10#" vercond="#NI_BS_LTE_FO4#" cond="Shader Type == 16">Eye cubemap scale</field>
         <field name="Left Eye Reflection Center" type="Vector3" vercond="#NI_BS_LTE_FO4#" cond="Shader Type == 16">Offset to set center for left eye cubemap</field>
