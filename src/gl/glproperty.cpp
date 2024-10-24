@@ -1360,6 +1360,8 @@ void BSLightingShaderProperty::resetParams()
     specularLevel = 0.04;
     roughnessScale = 1;
     displacementScale = 0.2;
+    thickness = 1;
+    subsurfaceColor = Color3(1, 1, 1);
 
 	// Multi-layer properties
 	innerThickness = 1.0;
@@ -1482,6 +1484,8 @@ void BSLightingShaderProperty::updateParams( const NifModel * nif )
             specularLevel = nif->get<float>( lsp, "Specular Level" );
             roughnessScale = nif->get<float>( lsp, "Roughness Scale" );
             displacementScale = nif->get<float>( lsp, "Displacement Scale" );
+            thickness = nif->get<float>( lsp, "Subsurface Opacity" );
+            subsurfaceColor = nif->get<Color3>( lsp, "Subsurface Color" );
 
 			innerThickness = nif->get<float>( lsp, "Parallax Inner Layer Thickness" );
 			outerRefractionStrength = nif->get<float>( lsp, "Parallax Refraction Scale" );

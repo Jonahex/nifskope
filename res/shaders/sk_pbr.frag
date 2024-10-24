@@ -26,9 +26,8 @@ uniform sampler2D BacklightMap;
 uniform sampler2D EnvironmentMap;
 uniform samplerCube CubeMap;
 
-uniform vec3 specColor;
-uniform float specStrength;
-uniform float specGlossiness;
+uniform vec3 subsurfaceColor;
+uniform float thickness;
 
 uniform bool hasGlowMap;
 uniform vec3 glowColor;
@@ -275,10 +274,10 @@ void main( void )
 	float roughness = rmaosMap.r * roughnessScale;
 	float metallic = rmaosMap.g;
 	float ao = rmaosMap.b;
-	float reflectance = rmaosMap.a * specGlossiness;
+	float reflectance = rmaosMap.a * specularLevel;
 	
 	vec3 baseColor = baseMap.rgb * C.rgb * (1 - metallic);
-	vec3 f0 = mix(vec3(specularLevel, specularLevel, specularLevel), baseMap.rgb, metallic);
+	vec3 f0 = mix(vec3(reflectance, reflectance, reflectance), baseMap.rgb, metallic);
 	
 	vec3 normal = normalize(tbnMatrix_norm * (normalMap.rgb * 2.0 - 1.0));
 	if ( !gl_FrontFacing )
@@ -314,14 +313,14 @@ void main( void )
 	if (hasRimlight)
 	{
 		vec4 subsurfaceMap = texture2D(BacklightMap, offset);
-		vec3 subsurfaceColor = specColor * subsurfaceMap.rgb;
-		float thickness = lightingEffect1 * subsurfaceMap.a;
+		vec3 finalSubsurfaceColor = subsurfaceColor * subsurfaceMap.rgb;
+		float finalThickness = thickness * subsurfaceMap.a;
 		
 		const float subsurfacePower = 12.234;
 		float forwardScatter = exp2(clamp(-dot(V, L), 0.0, 1.0) * subsurfacePower - subsurfacePower);
-		float backScatter = clamp(NdotL * thickness + (1.0 - thickness), 0.0, 1.0) * 0.5;
-		float subsurface = mix(backScatter, 1, forwardScatter) * (1.0 - thickness);
-		transmission += subsurfaceColor * subsurface * directLight;
+		float backScatter = clamp(NdotL * finalThickness + (1.0 - finalThickness), 0.0, 1.0) * 0.5;
+		float subsurface = mix(backScatter, 1, forwardScatter) * (1.0 - finalThickness);
+		transmission += finalSubsurfaceColor * subsurface * directLight;
 	}
 	
 	vec4 color;

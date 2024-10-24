@@ -147,6 +147,8 @@ const char * const Renderer::Program::uniforms[NUM_UNIFORM_TYPES] = {
     "specularLevel",	// SPEC_LEVEL
     "roughnessScale",	// ROUGH_SCALE
     "displacementScale",	// DISP_SCALE
+    "thickness", // THICKNESS
+    "subsurfaceColor", // SUBSURF_COLOR
 };
 
 
@@ -927,7 +929,7 @@ void Renderer::Program::uniSampler_l( int l, int firstTextureUnit, int textureCn
 		tmp[i] = firstTextureUnit + i;
 	for ( ; i < arraySize; i++ )
 		tmp[i] = firstTextureUnit;
-	f->glUniform1iv( l, arraySize, tmp );
+    f->glUniform1iv( l, arraySize, tmp );
 }
 
 static int setFlipbookParameters( const CE2Material::Material & m, FloatVector4 & uvScaleAndOffset )
@@ -1558,6 +1560,8 @@ bool Renderer::setupProgramCE1( const NifModel * nif, Program * prog, Shape * me
         prog->uni1f(SPEC_LEVEL, lsp->specularLevel);
         prog->uni1f(ROUGH_SCALE, lsp->roughnessScale);
         prog->uni1f(DISP_SCALE, lsp->displacementScale);
+        prog->uni1f(THICKNESS, lsp->thickness);
+        prog->uni3f(SUBSURF_COLOR, lsp->subsurfaceColor.red(), lsp->subsurfaceColor.green(), lsp->subsurfaceColor.blue());
 
 		// Multi-Layer
 

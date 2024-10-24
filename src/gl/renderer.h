@@ -166,6 +166,8 @@ public:
         SPEC_LEVEL,
         ROUGH_SCALE,
         DISP_SCALE,
+        THICKNESS,
+        SUBSURF_COLOR,
 
 		NUM_UNIFORM_TYPES
 	} UniformType;
